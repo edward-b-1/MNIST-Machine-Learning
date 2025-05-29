@@ -19,6 +19,8 @@ def run_dnn_train(
     filename,
     dnn_size,
     label,
+    epochs,
+    batch_size,
 ):
     # load data
     (train_images, train_labels), (test_images, test_labels) = mnist.load_data()
@@ -77,7 +79,7 @@ def run_dnn_train(
     )
 
     with tensorflow.device('/GPU:0'):
-        model_history = model.fit(new_train_images_float, new_train_labels, epochs=200, batch_size=512, verbose=0)
+        model_history = model.fit(new_train_images_float, new_train_labels, epochs=epochs, batch_size=batch_size, verbose=0)
 
     accuracy = model_history.history['accuracy'][0:]
     loss = model_history.history['loss'][0:]
@@ -122,3 +124,23 @@ def plot_accuracy_loss(filename, output_filename):
 
     fig.savefig(output_filename)
 
+def plot_accuracy_histogram(
+    filename,
+    histogram_figure_filename,
+    epoch,
+):
+    df = pandas.read_csv(filename)
+
+    end_accuracy = []
+
+    fig, ax = plt.subplots(1, 1)
+    for column in df.columns:
+        if 'accuracy' in column:
+            column_number = column.split('_')[1]
+            accuracy = df[column]
+            #end_accuracy.append(accuracy.iloc[-1])
+            end_accuracy.append(accuracy.iloc[epoch-1])
+
+    ax.hist(end_accuracy, bins=100, histtype='step', log=True)
+
+    fig.savefig(histogram_figure_filename)
